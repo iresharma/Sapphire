@@ -1,11 +1,11 @@
 import os
 from logger import Logger
+from engine import Renderer
 class Sapphire:
     """
         Sapphire Templating Engine implemented in python, highly inspired by jinja and handlebars
     """
     templates = {}
-    # formaters = {}
     def __init__(self, log=True):
         self.__version__ = "0.0.1"
         self.__author__ = "Iresharma"
@@ -34,7 +34,7 @@ class Sapphire:
             self.logger.info(f"Rendering template {templateName}")
         with open(self.templates[templateName], 'r') as f:
             template = f.read()
-            print(template)
+            renderer = Renderer(template, data)
 
 if __name__ == "__main__":
     sph = Sapphire()
