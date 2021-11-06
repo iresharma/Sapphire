@@ -1,11 +1,14 @@
 import os
 from logger import Logger
 from engine import Renderer
+
+
 class Sapphire:
     """
         Sapphire Templating Engine implemented in python, highly inspired by jinja and handlebars
     """
     templates = {}
+
     def __init__(self, log=True):
         self.__version__ = "0.0.1"
         self.__author__ = "Iresharma"
@@ -22,9 +25,11 @@ class Sapphire:
         for root, dirs, files in os.walk("templates"):
             for file in files:
                 if(file.split('.')[-1] == 'sph'):
-                    self.templates[file.split('.')[0]] = os.path.join(root, file)
+                    self.templates[file.split(
+                        '.')[0]] = os.path.join(root, file)
         if(self.__log__):
-            self.logger.info(f"{len(self.templates.keys())} Template(s) read successfully")
+            self.logger.info(
+                f"{len(self.templates.keys())} Template(s) read successfully")
 
     def renderTemplate(self, templateName: str, data: dict) -> str:
         """
@@ -35,7 +40,9 @@ class Sapphire:
         with open(self.templates[templateName], 'r') as f:
             template = f.read()
             renderer = Renderer(template, data)
+            renderer.render()
+
 
 if __name__ == "__main__":
     sph = Sapphire()
-    sph.renderTemplate("base", {"name": "Iresh"})
+    sph.renderTemplate("base", {"name": "Iresh", 'titles': [1, 2, 3], 'bonds': [1, 2, 3]})

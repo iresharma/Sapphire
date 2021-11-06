@@ -7,6 +7,11 @@
     <title>{[ title ]}</title>
 </head>
 <body>
-    
+    {: title in titles :}
+        hi {[ title ]}
+    {: end :}
+    {: bond in bonds :}
+        hi {[ bond ]}
+    {: end :}
 </body>
 </html>
