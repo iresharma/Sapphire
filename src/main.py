@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from logger import Logger
 from engine import Renderer
 
@@ -13,6 +14,7 @@ class Sapphire:
         self.__version__ = "0.0.1"
         self.__author__ = "Iresharma"
         self.__email__ = "iresh.sharma8@gmail.com"
+        self.OUTPUT_PATH = Path(__file__).parent.parent / "renders"
         self.__log__ = log
         self.logger = Logger()
         # ! Code to reader templates from root of project testing by hardcoding absolute path
@@ -40,8 +42,9 @@ class Sapphire:
         with open(self.templates[templateName], 'r') as f:
             template = f.read()
             renderer = Renderer(template, data)
-            renderer.render()
-
+            output = renderer.render()
+        with open(f'{self.OUTPUT_PATH}/{templateName}.html', 'w') as outFile:
+            outFile.write(output)
 
 if __name__ == "__main__":
     sph = Sapphire()

@@ -1,4 +1,5 @@
 import re
+from errors import DataNotIterable
 class Renderer:
     """
        The actually rendering engine, the various functions here look for:
@@ -17,11 +18,12 @@ class Renderer:
         self.conditionalRE = re.compile(r"\{\{\s\D\w*\s\}\}")
         self.loopRE = re.compile(r"\{\:\s\D*\s\:\}")
 
-    def render(self):
+    def render(self) -> str:
         """
             Render the template
         """
         self.replaceLoops()
+        return self.template
         # Rendering out the loops
 
     def replaceLoops(self):
@@ -29,11 +31,16 @@ class Renderer:
         finds = self.loopRE.findall(template)[0].split('{: end :}')
         finds.pop()
         for find in finds:
-            var, data, skip = self.getVariables(find)
+            var, data, slice, skip = self.getVariables(find)
             index = template.index(find)
             endIndex = template.index('{: end :}')
-            print(self.template[index + skip : endIndex :])
-            # for 
+            firstHalf = self.template[:index]
+            secondHalf = self.template[endIndex: + 9]
+            if type(self.data[data]) != list:
+                raise DataNotIterable(self.data, data)
+            for item in range(len(self.data[data])):
+                firstHalf += slice.replace(var, f'{data}[{item}]')
+            self.template = firstHalf + secondHalf
             
     def getVariables(self, find):
         loopArray = find.split(':}')
@@ -43,4 +50,4 @@ class Renderer:
         condition = loopArray[0].split(' ')
         var = condition[-4]
         data = condition[-2]
-        return var, data, lenCondition
+        return var, data, slice, lenCondition
