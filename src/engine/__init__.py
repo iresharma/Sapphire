@@ -14,8 +14,7 @@ class Renderer:
         self.data = data
         self.kwargs = kwargs
         # Compiled regular expressions
-        self.variableRE = re.compile(r"\{\[\s\D\w*\s\]\}")
-        self.conditionalRE = re.compile(r"\{\{\s\D\w*\s\}\}")
+        self.conditionalRE = re.compile(r"\{\{\s\D*\s\}\}")
         self.loopRE = re.compile(r"\{\:\s\D*\s\:\}")
 
     def render(self) -> str:
@@ -23,12 +22,38 @@ class Renderer:
             Render the template
         """
         self.replaceLoops()
+        self.replaceVariables()
         return self.template
-        # Rendering out the loops
 
+    def replaceVariables(self):
+        """
+            This function is used to replace the variables in the template with the actual data
+        """
+        # store temporary template variable to mutate this instead of directly mutating the global template
+        template = self.template
+        # Get count of variables
+        count = template.count('{[')
+        # Iterate through the variables
+        for i in range(count):
+            # Get the variable
+            var = template.split('{[')[1].split(']}')[0]
+            # Check for type of the key
+            if( '[' in var ):
+                # Get the key
+                key = var.split('[')[0].strip()
+                # Get the index
+                index = var.split('[')[1].split(']')[0]
+                # Replace the variable with the data
+                template = template.replace('{[' + var + ']}', f'{self.data[key][int(index)]}')
+            else:
+                # Replace the variable
+                template = template.replace('{[' + var + ']}', f'{self.data[var.strip()]}')
+        self.template = template
+        
+    
     def replaceLoops(self):
         """
-            This function is used to replace the loops in the template and boil them done to variables only statements
+            This function is used to parse the loops in the template and boil them done to variables only statements
 
             So the way this works is if we have a loop in the sapphire template that looks like this:
             {: for x in xyz :}
@@ -50,7 +75,7 @@ class Renderer:
         finds.pop()
         for find in finds:
             # Get the variables
-            var, data, slice, skip = self.getVariables(find)
+            var, data, slice, skip = self.parseLoopStatement(find)
             # Start of the loop statement
             index = template.index(find)
             # End of the loop block
@@ -69,7 +94,7 @@ class Renderer:
             template = firstHalf + secondHalf
         self.template = template
             
-    def getVariables(self, find):
+    def parseLoopStatement(self, find):
         """This function is used to get the variables from the loop
         
         Keyword arguments:
