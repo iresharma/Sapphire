@@ -48,4 +48,4 @@ class Sapphire:
 
 if __name__ == "__main__":
     sph = Sapphire()
-    sph.renderTemplate("base", {"name": "Iresh", 'titles': [1, 2, 3], 'bonds': [1, 2, 3]})
+    sph.renderTemplate("base", {"name": "Iresh", 'titles': ['hi', 'hello', 'buy'], 'bonds': [1, 2, 3]})
