@@ -22,6 +22,7 @@ class Renderer:
             Render the template
         """
         self.replaceLoops()
+        self.replaceConditionals()
         self.replaceVariables()
         return self.template
 
@@ -44,11 +45,26 @@ class Renderer:
                 # Get the index
                 index = var.split('[')[1].split(']')[0]
                 # Replace the variable with the data
-                template = template.replace('{[' + var + ']}', f'{self.data[key][int(index)]}')
+                if type(self.data[key]) == list:
+                    template = template.replace('{[' + var + ']}', f'{self.data[key][int(index)]}')
+                elif type(self.data[key]) == dict:
+                    template = template.replace('{[' + var + ']}', f'{self.data[key][index]}')
+                else:
+                    raise DataNotIterable(self.data, key)
+
+
             else:
                 # Replace the variable
                 template = template.replace('{[' + var + ']}', f'{self.data[var.strip()]}')
         self.template = template
+
+    
+    def replaceConditionals(self):
+        """
+            This Function is user to parse the conditionals and logical keep the snippets or removes them
+        """
+        pass
+        
         
     
     def replaceLoops(self):

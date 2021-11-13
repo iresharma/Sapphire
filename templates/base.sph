@@ -8,7 +8,7 @@
 </head>
 <body>
     {: title in titles :}
-        hi {[ title ]}
+        <span>hi {[ title ]}</span>
     {: end :}
     {: bond in bonds :}
         hi {[ bond ]}
