@@ -10,7 +10,7 @@ class Renderer:
     """
     
     def __init__(self, template: str, data: dict or None, **kwargs):
-        self.template = template
+        self.template = template.replace('\n', '')
         self.data = data
         self.kwargs = kwargs
         # Compiled regular expressions
@@ -24,7 +24,7 @@ class Renderer:
         self.replaceLoops()
         self.replaceConditionals()
         self.replaceVariables()
-        return self.template
+        return self.template.replace('>', '>\n')
 
     def replaceVariables(self):
         """
@@ -35,7 +35,7 @@ class Renderer:
         # Get count of variables
         count = template.count('{[')
         # Iterate through the variables
-        for i in range(count):
+        while count > 0:
             # Get the variable
             var = template.split('{[')[1].split(']}')[0]
             # Check for type of the key
@@ -45,9 +45,9 @@ class Renderer:
                 # Get the index
                 index = var.split('[')[1].split(']')[0]
                 # Replace the variable with the data
-                if type(self.data[key]) == list:
+                if isinstance(self.data[key], list):
                     template = template.replace('{[' + var + ']}', f'{self.data[key][int(index)]}')
-                elif type(self.data[key]) == dict:
+                elif isinstance(self.data[key], dict):
                     template = template.replace('{[' + var + ']}', f'{self.data[key][index]}')
                 else:
                     raise DataNotIterable(self.data, key)
@@ -56,6 +56,7 @@ class Renderer:
             else:
                 # Replace the variable
                 template = template.replace('{[' + var + ']}', f'{self.data[var.strip()]}')
+            count -= 1
         self.template = template
 
     
@@ -63,7 +64,21 @@ class Renderer:
         """
             This Function is user to parse the conditionals and logical keep the snippets or removes them
         """
-        pass
+        template = self.template
+        finds = self.conditionalRE.findall(template)
+        print(finds)
+        for find in finds:
+            find = find.split('}}')
+            self.parseCondition(find[0])
+            rem = find[1].replace('{{ end ', '')
+            print(rem)
+        
+    def parseCondition(self, con: str) -> str:
+        # clean the given condition string
+        con = con.replace('{{ ', '').replace('"', '')
+        conParts = con.split(' ')
+        print(conParts)
+
         
         
     
@@ -90,6 +105,12 @@ class Renderer:
         # pop the last element of the find beacasue it is always empty
         finds.pop()
         for find in finds:
+            # Removing unnecessary spaces
+            find.strip()
+            # Checking if the string actually starts from a loop
+            if '{{' in find:
+                indexOfCon = find.index('{{ end }}')
+                find = find[indexOfCon + 9 : :]
             # Get the variables
             var, data, slice, skip = self.parseLoopStatement(find)
             # Start of the loop statement
@@ -101,11 +122,15 @@ class Renderer:
             # Slice of template after the loop block
             secondHalf = template[endIndex + 9 : :]
             # Checking if the key is iterable (currently only lists are iterable)
-            if type(self.data[data]) != list:
-                raise DataNotIterable(self.data, data)
-            # Iterate through the list
-            for item in range(len(self.data[data])):
-                firstHalf += slice.replace(var, f'{data}[{item}]')
+            if isinstance(self.data[data], list):
+                # Iterate through the list
+                for item in range(len(self.data[data])):
+                    firstHalf += slice.replace(var, f'{data}[{item}]')
+            elif isinstance(self.data[data], dict):
+                # Iterate through a dictionary
+                for keys in self.data[data].keys():
+                    firstHalf += slice.replace(var, f'{data}[{keys}]')
+
             # Replace the template with the new template
             template = firstHalf + secondHalf
         self.template = template
@@ -128,7 +153,7 @@ class Renderer:
 
         # Length of the loop statement
         lenCondition = len(loopArray[0]) + 2
-        # Extracting the loop bloack
+        # Extracting the loop block
         slice = loopArray.pop()
         # Extracting the loop statement
         condition = loopArray[0].split(' ')

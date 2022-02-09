@@ -10,6 +10,9 @@
     {: title in titles :}
         <span>hi {[ title ]}</span>
     {: end :}
+    {{ if xyz in "hello" }}
+        hi what's up
+    {{ end }}
     {: bond in bonds :}
         hi {[ bond ]}
     {: end :}
